@@ -7,110 +7,123 @@ const clearBtn = document.getElementById('clearBtn');
 const eraserBtn = document.getElementById('eraserBtn');
 const strokeSlider = document.getElementById('strokeSize');
 const colorPalette = document.getElementById('colorPalette');
-console.log(":: ", colorPalette);
+const selectColor = document.getElementById('selectColor');
+const roomName = document.getElementById("roomID");
 
-// === Socket Setup ===
 const params = new URLSearchParams(window.location.search);
 const roomID = params.get("room") || "defaultRoom";
-const username = params.get("user") || "Anonymous";
+roomName.innerText = `RoomID : ${roomID}`
 
-// === Canvas Resize ===
 function resizeCanvas() {
-  canvas.width = window.innerWidth <= 400 ? 400 : 600;
-  canvas.height = 450;
+  canvas.width = window.innerWidth <= 400 ? 400 : 700;
+  canvas.height = 650;
 }
 window.addEventListener('resize', resizeCanvas);
-resizeCanvas();
+resizeCanvas(); 
 
-// === Drawing State ===
-let isDrawing = false;
-let color = '#a855f7';
-let strokeSize = 2;
 
-// === Color Palette ===
+let isDrawing = false;  // * prevent event trigger on hovers
+let color = '#000000';        
+let strokeSize = 4;
+const remotePaths = {};  // * { socketID: { lastX, lastY, color, strokeSize } }
+
+
 const colors = ['#a855f7', '#ef4444', '#10b981', '#3b82f6', '#f59e0b', '#000000'];
-
 colors.forEach(c => {
   const div = document.createElement('div');
   div.className = 'color-circle';
   div.style.backgroundColor = c;
-  div.addEventListener('click', () => {
-    color = c;
-  });
+  div.addEventListener('click', () => { color = c; });
   colorPalette.appendChild(div);
 });
 
-// === Drawing Functions ===
+
+// pointer down
 function startDrawing(e) {
+  e.preventDefault();
+  const x = e.offsetX;
+  const y = e.offsetY;
   isDrawing = true;
-  ctx.beginPath();
-  ctx.moveTo(e.offsetX, e.offsetY);
-  ctx.lineWidth = strokeSize;
-  ctx.strokeStyle = color;
-  socket.emit("beginPath", { room: roomID, strokeSize });
+  socket.emit("beginPath", { color, x, y, room: roomID, strokeSize });
 }
 
+// pointer move
 function draw(e) {
-  if (!isDrawing) return;
-  ctx.lineWidth = strokeSize;
-  ctx.lineCap = 'round';
-  ctx.strokeStyle = color;
-  ctx.lineTo(e.offsetX, e.offsetY);
-  ctx.stroke();
+  if (!isDrawing) return; // *prevent hover from emitting, cant start without pointer down
+  e.preventDefault();
+  const offsetX = e.offsetX;
+  const offsetY = e.offsetY;
 
   socket.emit("draw", {
-    room: roomID,
-    offsetX: e.offsetX,
-    offsetY: e.offsetY,
+    offsetX,
+    offsetY,
     color,
-    strokeSize
+    strokeSize,
+    room: roomID
   });
 }
 
-function finishDrawing() {
+// pointer up / out/ cancel: stop 
+function finishDrawing(e) {
   if (!isDrawing) return;
+  e.preventDefault();
   isDrawing = false;
-  ctx.closePath();
   socket.emit("stopDrawing", { room: roomID });
 }
 
-// === Button Actions ===
-eraserBtn.addEventListener('click', () => {
-  color = 'white';
-});
+
+// todo : Eventt listenes
+eraserBtn.addEventListener('click', () => { color = 'white'; });
 
 clearBtn.addEventListener('click', () => {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   socket.emit("clear", { room: roomID, width: canvas.width, height: canvas.height });
 });
 
-strokeSlider.addEventListener('input', e => {
-  strokeSize = e.target.value;
+strokeSlider.addEventListener('input', e => { strokeSize = e.target.value; });
+
+canvas.addEventListener('pointerdown', startDrawing);
+canvas.addEventListener('pointermove', draw);
+canvas.addEventListener('pointerup', finishDrawing);
+canvas.addEventListener('pointerout', finishDrawing);
+canvas.addEventListener('pointercancel', finishDrawing);
+
+selectColor.addEventListener("input", (e)=>{
+  color = e.target.value;
+})
+
+
+
+// TODO:  socket events 
+socket.on("beginPath", ({ socketID, color: c, x, y, strokeSize: s }) => {
+  console.log("recv beginPath:", socketID, x, y, c, s);
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineWidth = s;
+  ctx.lineCap = 'round';
+  ctx.strokeStyle = c;
+
+  remotePaths[socketID] = { lastX: x, lastY: y, color: c, strokeSize: s };
 });
 
-// === Mouse Events ===
-canvas.addEventListener('mousedown', startDrawing);
-canvas.addEventListener('mouseup', finishDrawing);
-canvas.addEventListener('mousemove', draw);
-canvas.addEventListener('mouseleave', finishDrawing);
-
-// === Socket Events ===
-socket.on("beginPath", ({ strokeSize }) => {
+socket.on("draw", ({ socketID, offsetX, offsetY, color, strokeSize }) => {
+  const last = remotePaths[socketID];
   ctx.beginPath();
   ctx.lineWidth = strokeSize;
-});
-
-socket.on("draw", ({ offsetX, offsetY, color, strokeSize }) => {
-  ctx.lineWidth = strokeSize;
   ctx.strokeStyle = color;
+  ctx.lineCap = 'round';
+  ctx.moveTo(last.lastX, last.lastY);
   ctx.lineTo(offsetX, offsetY);
   ctx.stroke();
+
+  // *update the last point for this user
+  remotePaths[socketID].lastX = offsetX;
+  remotePaths[socketID].lastY = offsetY;
 });
 
-socket.on("stopDrawing", () => {
-  ctx.closePath();
+socket.on("stopDrawing", ({ socketID }) => {
+  delete remotePaths[socketID];
 });
-
 socket.on("clear", ({ width, height }) => {
   ctx.clearRect(0, 0, width, height);
 });

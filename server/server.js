@@ -7,10 +7,6 @@ const PORT = process.env.PORT || 3000;
 
 const httpServer = createServer(app);
 
-app.get("/", (req, res) => {
-  res.json({ message: "✅ Collaborative Canvas Server is running!" });
-});
-
 const io = new Server(httpServer, {
   cors: {
     origin: "*",
@@ -20,26 +16,34 @@ const io = new Server(httpServer, {
 
 io.on("connection", (socket) => {
   const { roomID, username } = socket.handshake.query;
-  console.log(`🟢 ${username || "User"} connected to room ${roomID}`);
+  console.log(`🟢 ${username || "User"} connected to room ${roomID} using ${socket.id}`);
   socket.join(roomID);
 
-  // --- Drawing Events ---
-  socket.on("beginPath", ({ strokeSize }) => {
-    socket.to(roomID).emit("beginPath", {
+
+  // todo: events 
+  // * use io if to all, 
+  // * socket if to everyone else
+  socket.on("beginPath", ({ color, x, y, strokeSize }) => {
+    io.to(roomID).emit("beginPath", {
       socketID: socket.id,
-      strokeSize,
+      color,
+      x,
+      y,
+      roomID,
+      strokeSize
     });
   });
 
   socket.on("draw", ({ offsetX, offsetY, color, strokeSize }) => {
-    socket.to(roomID).emit("draw", {
+    io.to(roomID).emit("draw", {
       socketID: socket.id,
       offsetX,
       offsetY,
       color,
-      strokeSize,
+      strokeSize
     });
   });
+
 
   socket.on("stopDrawing", () => {
     socket.to(roomID).emit("stopDrawing");
@@ -49,13 +53,12 @@ io.on("connection", (socket) => {
     socket.to(roomID).emit("clear", { width, height });
   });
 
-  // --- Disconnect ---
   socket.on("disconnect", () => {
-    console.log(`🔴 ${username || "User"} disconnected from ${roomID}`);
+    console.log(`${username} disconnected from ${roomID}`);
   });
 });
 
-// Start server
-httpServer.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+httpServer.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server running on http://0.0.0.0:${PORT}`);
 });
+

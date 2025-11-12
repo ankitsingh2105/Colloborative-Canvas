@@ -5,7 +5,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Join Room</title>
-  <link rel="stylesheet" href="join.css" />
+  <link rel="stylesheet" href="/client/join.css" />
 </head>
 
 <body>
@@ -22,7 +22,7 @@
       const username = document.getElementById('username').value.trim();
       const room = document.getElementById('room').value.trim();
       const message = document.getElementById('message');
-      window.location.href = `/canvas/canvas.html?room=${room}&user=${username}`;
+      window.location.href = `/client/canvas/canvas.html?room=${room}&user=${username}`;
       return;
 
       if (!username || !room) {

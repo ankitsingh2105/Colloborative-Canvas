@@ -4,16 +4,19 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Playground</title>
-  <link rel="stylesheet" href="canvas.css" />
+  <title>Collaboratve Canvas</title>
+  <link rel="stylesheet" href="/client/canvas/canvas.css" />
 </head>
 
 <body>
   <section class="container">
+    <h1 id="roomID"" >Room: </h1>
     <canvas id="playgroundCanvas"></canvas>
 
     <section class="controls">
       <div class="color-palette" id="colorPalette"></div>
+
+      <input type="color" id="selectColor">
 
       <button id="eraserBtn" class="eraserBtn">Eraser</button>
 
@@ -24,9 +27,10 @@
       </div>
     </section>
   </section>
+
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-  <script type="module" src="socket.js"></script>
-  <script type="module" src="canvas.js"></script>
+  <script type="module" src="/client/canvas/socket.js"></script>
+  <script type="module" src="/client/canvas/canvas.js"></script>
 
 </body>
 
