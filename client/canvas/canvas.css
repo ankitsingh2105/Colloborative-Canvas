@@ -1,0 +1,95 @@
+:root {
+  --primary: oklch(51.1% .262 276.966);
+  --accent: oklch(65.6% .241 354.308);
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  background: #f8f5ff;
+  font-family: system-ui, Segoe UI, Helvetica, Arial;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+}
+
+#playgroundCanvas {
+  border: 2px solid var(--primary);
+  border-radius: 8px;
+  background: white;
+  cursor: crosshair;
+}
+
+.controls {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.color-palette {
+  display: flex;
+  gap: 8px;
+}
+
+.color-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid #ddd;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.color-circle:hover {
+  transform: scale(1.1);
+}
+
+.eraserBtn,
+.clearBtn {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+}
+
+.eraserBtn {
+  background: var(--accent);
+}
+
+.eraserBtn:hover {
+  background: oklch(58% .23 354.308);
+}
+
+.clearBtn {
+  background: #ef4444;
+}
+
+.clearBtn:hover {
+  background: #dc2626;
+}
+
+.slider-container {
+  display: flex;
+  align-items: center;
+}
+
+#strokeSize {
+  width: 150px;
+  accent-color: var(--primary);
+  cursor: pointer;
+}

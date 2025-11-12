@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Join Room</title>
+  <link rel="stylesheet" href="join.css" />
+</head>
+
+<body>
+  <div class="container">
+    <h2>Join or Create Room</h2>
+    <input type="text" id="username" placeholder="Enter username" />
+    <input type="text" id="room" placeholder="Enter room ID" />
+    <button id="joinBtn">Continue</button>
+    <p id="message"></p>
+  </div>
+  
+  <script>
+    document.getElementById('joinBtn').addEventListener('click', async () => {
+      const username = document.getElementById('username').value.trim();
+      const room = document.getElementById('room').value.trim();
+      const message = document.getElementById('message');
+      window.location.href = `/canvas/canvas.html?room=${room}&user=${username}`;
+      return;
+
+      if (!username || !room) {
+        message.textContent = "Please enter both username and room ID.";
+        return;
+      }
+
+      try {
+        // Check if username exists
+        const userRes = await fetch('/checkUser', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            username
+          })
+        });
+        const userData = await userRes.json();
+
+        if (userData.exists) {
+          message.textContent = "Username already taken. Please choose another.";
+          return;
+        }
+
+        // Check if room exists
+        const roomRes = await fetch('/checkRoom', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            room
+          })
+        });
+        const roomData = await roomRes.json();
+
+        if (roomData.exists) {
+          message.textContent = "Room found! Joining...";
+          // redirect to canvas page
+        } else {
+          message.textContent = "Room not found. Creating a new one...";
+          // redirect to canvas page (as new room)
+          window.location.href = `canvas.html?room=${room}&user=${username}`;
+        }
+      } catch (err) {
+        console.error(err);
+        message.textContent = "Error connecting to server.";
+      }
+    });
+  </script>
+</body>
+
+</html>
