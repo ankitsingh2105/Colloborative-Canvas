@@ -22,11 +22,8 @@ socket.connect();
 
 // Connection events
 socket.on("connect", () => {
-  console.log(`✅ Connected as ${username} to room ${roomID}`);
+  console.log(`✅ Connected as ${username} to room ${roomID}`); // only i will get this, not other users
 });
 
-socket.on("connect_error", (err) => {
-  console.error("⚠️ Connection error:", err.message);
-});
 
 export { socket };

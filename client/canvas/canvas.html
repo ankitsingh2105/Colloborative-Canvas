@@ -6,26 +6,38 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Collaboratve Canvas</title>
   <link rel="stylesheet" href="/client/canvas/canvas.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
   <section class="container">
     <h1 id="roomID"" >Room: </h1>
-    <canvas id="playgroundCanvas"></canvas>
-
-    <section class="controls">
-      <div class="color-palette" id="colorPalette"></div>
-
-      <input type="color" id="selectColor">
-
-      <button id="eraserBtn" class="eraserBtn">Eraser</button>
-
-      <button id="clearBtn" class="clearBtn">Clear</button>
-
-      <div class="slider-container">
-        <input type="range" id="strokeSize" min="1" max="50" value="2" />
-      </div>
-    </section>
+    <div id="info">
+      <section id="players">
+        <h3>Players Online</h3>
+        <ul id="playerList">
+        </ul>
+      </section>
+      <section>
+        <small id="floatingBtn"></small>
+        <canvas id="playgroundCanvas"></canvas>
+      
+        <section class="controls">
+          <div class="color-palette" id="colorPalette"></div>
+        
+          <input type="color" id="selectColor">
+        
+          <button id="eraserBtn" class="eraserBtn">Eraser</button>
+        
+          <button id="clearBtn" class="clearBtn">Clear</button>
+        
+        
+          <div class="slider-container">
+            <input type="range" id="strokeSize" min="1" max="50" value="2" />
+          </div>
+        </section>
+      </section>
+    </div>
   </section>
 
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
