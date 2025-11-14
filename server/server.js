@@ -14,7 +14,9 @@ const io = new Server(httpServer, {
   },
 });
 
-
+app.get("/", (req, res) => {
+  res.send("canvas running on AWS.");
+});
 
 // function to generate randome color for each user - in backeend only
 function getRandomColor() {
@@ -123,7 +125,7 @@ io.on("connection", (socket) => {
   });
 });
 
-httpServer.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running on http://0.0.0.0:${PORT}`);
+httpServer.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
 
