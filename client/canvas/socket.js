@@ -1,7 +1,7 @@
-import { backendLink } from "../backendlink";
-console.log("Backend Link:", backendLink);
+import {backendlink} from "../backendlink.js";
+console.log("Backend Link:", backendlink);
 function createSocket(roomID, username) {
-  const socket = io(backendLink, {
+  const socket = io(backendlink, {
     autoConnect: false,
     transports: ["websocket"],
     query: {
