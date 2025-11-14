@@ -28,7 +28,7 @@ button {
   border: 2px solid blue;
   border-radius: 8px;
   background: white;
-  cursor: url('/client/assets/brush.png') 10 40, auto;
+  cursor: url('../assets/brush.png') 10 40, auto;
 }
 
 #playgroundCanvas {
