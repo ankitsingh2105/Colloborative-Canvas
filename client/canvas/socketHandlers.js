@@ -53,6 +53,13 @@ socket.on("draw", ({ socketID, offsetX, offsetY, color, strokeSize, playerName }
 
   path.points.push({ x, y });
 
+  // here i am resetting drawing path for each stroke
+  if (path.points.length > 1) {
+    state.ctx.beginPath();
+    const prev = path.points[path.points.length - 2];
+    state.ctx.moveTo(prev.x, prev.y);
+  }
+
   // todo: used algo here  
   smoothDrawUsingLast3(state.ctx, path, strokeSize, color);
 
