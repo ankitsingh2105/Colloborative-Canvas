@@ -8,17 +8,17 @@ const strokeSlider = document.getElementById('strokeSize');
 const colorPalette = document.getElementById('colorPalette');
 const selectColor = document.getElementById('selectColor');
 const roomName = document.getElementById("roomID");
-const floating = document.getElementById("floatingBtn");
 const playersList = document.getElementById("playerList");
+const undoButton = document.getElementById("undoBtn");
+const redoButton = document.getElementById("redoBtn");
 
 const params = new URLSearchParams(window.location.search);
 const roomID = params.get("room") || "defaultRoom";
 const playerName = params.get("user") || "defaultName";
 roomName.innerText = `RoomID : ${roomID}`
 
-
 function resizeCanvas() {
-  canvas.width = window.innerWidth * (window.innerWidth <= 600 ? 0.95 :  0.7);
+  canvas.width = window.innerWidth * (window.innerWidth <= 600 ? 0.95 : 0.7);
   canvas.height = window.innerHeight * (window.innerWidth <= 600 ? 0.5 : 0.7);
 }
 window.addEventListener('resize', resizeCanvas);
@@ -29,7 +29,9 @@ let isDrawing = false;  // * prevent event trigger on hovers
 let color = '#000000';
 let strokeSize = 4;
 const remotePaths = {};  // * { socketID: { lastX, lastY, color, strokeSize } }
-const floatingLabels = {}; //* { socketID: HTMLDivElement }, prevents blinking as all socket are working on save divs
+const floatingLabels = {}; // * { socketID: HTMLDivElement }, prevents blinking as all socket are working on save divs
+let globalRedoStack = []; 
+const globalUndoStack = [];
 
 const colors = ['#a855f7', '#ef4444', '#10b981', '#3b82f6', '#f59e0b', '#000000'];
 colors.forEach(c => {
@@ -40,14 +42,13 @@ colors.forEach(c => {
   colorPalette.appendChild(div);
 });
 
-
 // pointer down
 function startDrawing(e) {
   e.preventDefault();
-  let x = e.offsetX / canvas.width;
-  let y = e.offsetY / canvas.height;
+  let offsetX = e.offsetX / canvas.width;
+  let offsetY = e.offsetY / canvas.height;
   isDrawing = true;
-  socket.emit("beginPath", { color, x, y, room: roomID, strokeSize });
+  socket.emit("beginPath", { color, offsetX, offsetY, room: roomID, strokeSize, playerName });
 }
 
 // pointer move
@@ -80,7 +81,7 @@ eraserBtn.addEventListener('click', () => { color = 'white'; });
 
 clearBtn.addEventListener('click', () => {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  socket.emit("clear", { room: roomID, width: canvas.width, height: canvas.height });
+  socket.emit("clear");
 });
 
 strokeSlider.addEventListener('input', e => { strokeSize = e.target.value; });
@@ -94,6 +95,32 @@ canvas.addEventListener('pointercancel', finishDrawing);
 selectColor.addEventListener("input", (e) => {
   color = e.target.value;
 })
+
+
+// Todo : undo redo using key and buttons
+undoButton.addEventListener("click", () => {
+  if(globalUndoStack.length == 0) return;
+  socket.emit("undo");
+});
+
+redoButton.addEventListener("click", () => {
+  if(globalRedoStack.length == 0) return;
+  socket.emit("redo");
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.ctrlKey &&  e.key.toLowerCase() === "z") {
+    e.preventDefault();
+    if(globalUndoStack.length == 0) return;
+    socket.emit("undo");
+  }
+  if (e.ctrlKey && e.key.toLowerCase() === "y") {
+    e.preventDefault();
+    if(globalRedoStack.length == 0) return;
+    socket.emit("redo");
+  }
+});
+
 
 // TODO:  socket events 
 socket.on("beginPath", ({ socketID, color: c, x, y, strokeSize: s }) => {
@@ -126,6 +153,7 @@ socket.on("beginPath", ({ socketID, color: c, x, y, strokeSize: s }) => {
   label.style.display = "flex";
   label.style.left = `${rect.left + x + 10}px`;
   label.style.top = `${rect.top + y - 20}px`;
+  label.innerText = playerName;
 });
 
 
@@ -133,7 +161,6 @@ socket.on("draw", ({ socketID, offsetX, offsetY, color, strokeSize, playerName }
   offsetX = offsetX * canvas.width;
   offsetY = offsetY * canvas.height;
   const last = remotePaths[socketID];
-  floating.style.display = "flex"
   ctx.beginPath();
   ctx.lineWidth = strokeSize;
   ctx.strokeStyle = color;
@@ -141,7 +168,6 @@ socket.on("draw", ({ socketID, offsetX, offsetY, color, strokeSize, playerName }
   ctx.moveTo(last.lastX, last.lastY);
   ctx.lineTo(offsetX, offsetY);
   ctx.stroke();
-  floating.style.top = offsetX;
 
   // todo : floating name
   const rect = canvas.getBoundingClientRect(); // todo : to get the canvas position on the screen
@@ -157,7 +183,16 @@ socket.on("draw", ({ socketID, offsetX, offsetY, color, strokeSize, playerName }
   remotePaths[socketID].lastY = offsetY;
 });
 
-socket.on("stopDrawing", ({ socketID }) => {
+socket.on("stopDrawing", ({ socketID, eventActionObject }) => {
+  eventActionObject = JSON.parse(eventActionObject);
+  console.log("eventActionObject : " , eventActionObject);
+
+  console.log("before new : " ,globalUndoStack)
+  globalUndoStack.push(eventActionObject);
+  console.log("after new : ", globalUndoStack)
+  globalRedoStack = [];
+
+  // clear the lables
   const label = floatingLabels[socketID];
   if (label) {
     label.remove();
@@ -166,9 +201,8 @@ socket.on("stopDrawing", ({ socketID }) => {
   delete remotePaths[socketID];
 });
 
-
-socket.on("clear", ({ width, height }) => {
-  ctx.clearRect(0, 0, width, height);
+socket.on("clear", () => {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 });
 
 // todo: players socket event
@@ -187,6 +221,7 @@ socket.on("user-joined", ({ playersInRoom }) => {
     circle.style.width = "20px";
     circle.style.height = "20px";
     circle.style.borderRadius = "100px";
+    circle.style.border = "3px solid lightgreen";
     circle.style.backgroundColor = color;
 
     const name = document.createElement("span");
@@ -205,4 +240,60 @@ socket.on("user-disconnected", ({ socketID }) => {
   if (li) {
     li.remove();
   }
+});
+
+socket.on("undo", () => {
+  if (globalUndoStack.length === 0) return;
+
+  const stroke = globalUndoStack.pop();
+  globalRedoStack.push(stroke);
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+   // todo : redraw all strokes in undo stack so overlapping cause no problem
+  globalUndoStack.forEach(strokeOp => {
+    const points = strokeOp.coordinate_batch_array;
+
+    ctx.strokeStyle = strokeOp.color;
+    ctx.lineWidth = strokeOp.strokeSize;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+
+    ctx.beginPath();
+    ctx.moveTo(points[0].offsetX * canvas.width, points[0].offsetY * canvas.height);
+
+    for (let i = 1; i < points.length; i++) {
+      ctx.lineTo(points[i].offsetX * canvas.width, points[i].offsetY * canvas.height);
+    }
+
+    ctx.stroke();
+  });
+});
+
+socket.on("redo", () => {
+  if (globalRedoStack.length === 0) return;
+
+  const stroke = globalRedoStack.pop();
+  globalUndoStack.push(stroke);
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // todo : redraw all strokes in undo stack so overlapping cause no problem
+  globalUndoStack.forEach(strokeOp => {
+    const points = strokeOp.coordinate_batch_array;
+
+    ctx.strokeStyle = strokeOp.color;
+    ctx.lineWidth = strokeOp.strokeSize;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+
+    ctx.beginPath();
+    ctx.moveTo(points[0].offsetX * canvas.width, points[0].offsetY * canvas.height);
+
+    for (let i = 1; i < points.length; i++) {
+      ctx.lineTo(points[i].offsetX * canvas.width, points[i].offsetY * canvas.height);
+    }
+
+    ctx.stroke();
+  });
 });

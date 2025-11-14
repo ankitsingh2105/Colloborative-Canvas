@@ -4,9 +4,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Collaboratve Canvas</title>
+  <title>Collaborative Canvas</title>
   <link rel="stylesheet" href="/client/canvas/canvas.css" />
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="shortcut icon" href="/client/assets/canvas.png" type="image/x-icon">
 </head>
 
 <body>
@@ -19,7 +20,6 @@
         </ul>
       </section>
       <section>
-        <small id="floatingBtn"></small>
         <canvas id="playgroundCanvas"></canvas>
       
         <section class="controls">
@@ -35,6 +35,9 @@
           <div class="slider-container">
             <input type="range" id="strokeSize" min="1" max="50" value="2" />
           </div>
+          
+          <button id="undoBtn">undo</button>
+          <button id="redoBtn">redo</button>
         </section>
       </section>
     </div>

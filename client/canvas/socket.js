@@ -1,5 +1,6 @@
 
 let backendLink = "http://192.168.0.103:3000";
+// http://192.168.0.124
 function createSocket(roomID, username) {
   const socket = io(backendLink, {
     autoConnect: false,
