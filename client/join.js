@@ -2,13 +2,15 @@ document.getElementById('joinBtn').addEventListener('click', () => {
     const username = document.getElementById('username').value.trim();
     const room = document.getElementById('room').value.trim();
     const message = document.getElementById('message');
+
     if (!username || !room) {
         message.textContent = "Please enter both username and room ID.";
         return;
     }
 
+    // Correct Netlify path (NO /client/)
     window.location.href =
-        `/client/canvas/canvas.html?room=${room}&user=${username}`;
+        `/canvas/canvas.html?room=${room}&user=${username}`;
 });
 
 // LOAD SAVED SESSION
@@ -39,12 +41,15 @@ if (!saved) {
             li.addEventListener("click", () => {
                 const username = document.getElementById('username').value.trim();
                 const room = document.getElementById('room').value.trim();
+
                 if (username === "" || room === "") {
                     alert("Please enter both username and room ID.");
                     return;
                 }
+
+                // Correct Netlify path (NO /client/)
                 window.location.href =
-                    `/client/canvas/canvas.html?room=${room}&user=${username}&loadSession=${index}`;
+                    `/canvas/canvas.html?room=${room}&user=${username}&loadSession=${index}`;
             });
 
             container.appendChild(li);
