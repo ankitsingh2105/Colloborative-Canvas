@@ -38,8 +38,8 @@ socket.on("beginPath", ({ socketID, color, offsetX, offsetY, strokeSize: s }) =>
   const rect = state.canvas.getBoundingClientRect();
   const label = state.floatingLabels[socketID];
   label.style.display = "flex";
-  label.style.left = `${rect.left + x + 10}px`;
-  label.style.top = `${rect.top + y - 20}px`;
+  label.style.left = `${rect.left + offsetX + 10}px`;
+  label.style.top = `${rect.top + offsetY - 20}px`;
   label.innerText = state.playerName;
 });
 
