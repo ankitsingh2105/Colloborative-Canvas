@@ -11,36 +11,47 @@
 </head>
 
 <body>
+  <section id="metrics">
+    <div id="fpsCounter">
+      FPS: --
+    </div>
+
+    <div id="latencyCounter">
+      Ping: --
+    </div>
+  </section>
   <section class="container">
     <h1 id="roomID"" >Room: </h1>
-    <div id="info">
-      <section id="players">
-        <h3>Players Online</h3>
-        <ul id="playerList">
-        </ul>
-      </section>
-      <section>
-        <canvas id="playgroundCanvas"></canvas>
-      
-        <section class="controls">
-          <div class="color-palette" id="colorPalette"></div>
-        
-          <input type="color" id="selectColor">
-        
-          <button id="eraserBtn" class="eraserBtn">Eraser</button>
-        
-          <button id="clearBtn" class="clearBtn">Clear</button>
-        
-        
-          <div class="slider-container">
-            <input type="range" id="strokeSize" min="1" max="50" value="2" />
-          </div>
-          
-          <button id="undoBtn">undo</button>
-          <button id="redoBtn">redo</button>
+
+      <div id="info">
+        <section id="players">
+          <h3>Players Online</h3>
+          <ul id="playerList">
+          </ul>
         </section>
-      </section>
-    </div>
+        <section>
+          <canvas id="playgroundCanvas"></canvas>
+
+          <section class="controls">
+            <div class="color-palette" id="colorPalette"></div>
+
+            <input type="color" id="selectColor">
+
+            <button id="eraserBtn" class="eraserBtn">Eraser</button>
+
+            <button id="clearBtn" class="clearBtn">Clear</button>
+
+
+            <div class="slider-container">
+              <input type="range" id="strokeSize" min="1" max="50" value="2" />
+            </div>
+
+            <button id="undoBtn">undo</button>
+            <button id="redoBtn">redo</button>
+            <button id="saveSessionBtn">Save session</button>
+          </section>
+        </section>
+      </div>
   </section>
 
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>

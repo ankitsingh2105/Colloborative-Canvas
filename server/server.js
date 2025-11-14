@@ -19,7 +19,6 @@ const io = new Server(httpServer, {
 const rooms = new Map();
 const individualUndoRedoMap = new Map(); // mapping the sokcetID to its current operation, prevent overlapping operations
 
-
 // function to generate randome color for each user - in backeend only
 function getRandomColor() {
   const letters = '0123456789ABCDEF';
@@ -83,7 +82,7 @@ io.on("connection", (socket) => {
 
 
   socket.on("stopDrawing", () => {
-    console.log("🔴 🔴 🔴 red sign stopDrawing from", socket.id);
+    console.log("🔴 🔴 🔴 stopDrawing from", socket.id);
     const currentPlayer = individualUndoRedoMap.get(socket.id);
     const eventActionObject = {
       socketID: socket.id,
@@ -108,6 +107,11 @@ io.on("connection", (socket) => {
   socket.on("redo", () => {
     io.to(roomID).emit("redo");
   })
+
+  socket.on("ping-check", (startTime) => {
+    socket.emit("pong-check", startTime);
+  });
+
 
   socket.on("disconnect", () => {
     io.to(roomID).emit("user-disconnected", { socketID: socket.id });
