@@ -3,23 +3,23 @@ import { socket } from './socket.js';
 import { state } from './state.js';
 import { smoothDrawUsingLast3 } from './smoothing.js';
 
-socket.on("beginPath", ({ socketID, color: c, x, y, strokeSize: s }) => {
-  x = x * state.canvas.width;
-  y = y * state.canvas.height;
+socket.on("beginPath", ({ socketID, color, offsetX, offsetY, strokeSize: s }) => {
+  offsetX = offsetX * state.canvas.width;
+  offsetY = offsetY * state.canvas.height;
 
   // store first point
   state.remotePaths[socketID] = {
-    color: c,
+    color,
     strokeSize: s,
-    points: [{ x, y }]
+    points: [{ x: offsetX, y: offsetY }]
   };
 
   state.ctx.lineWidth = s;
   state.ctx.lineCap = 'round';
-  state.ctx.strokeStyle = c;
+  state.ctx.strokeStyle = color;
 
   state.ctx.beginPath();
-  state.ctx.moveTo(x, y);
+  state.ctx.moveTo(offsetX, offsetY);
 
   // * floating label
   if (!state.floatingLabels[socketID]) {
