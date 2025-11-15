@@ -53,17 +53,22 @@ state.redoButton.addEventListener("click", () => {
 });
 
 document.addEventListener("keydown", (e) => {
-  if (e.ctrlKey && e.key.toLowerCase() === "z") {
+  const isUndo = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z";
+  const isRedo = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "y";
+
+  if (isUndo) {
     e.preventDefault();
-    if (state.globalUndoStack.length == 0) return;
+    if (state.globalUndoStack.length === 0) return;
     socket.emit("undo");
   }
-  if (e.ctrlKey && e.key.toLowerCase() === "y") {
+
+  if (isRedo) {
     e.preventDefault();
-    if (state.globalRedoStack.length == 0) return;
+    if (state.globalRedoStack.length === 0) return;
     socket.emit("redo");
   }
 });
+
 
 state.clearBtn.addEventListener('click', () => {
   socket.emit("clear");
