@@ -53,6 +53,7 @@ export const state = (() => {
     // dynamic data
     remotePaths: {},     // todo: { socketID: { color, strokeSize, points: [{x,y}, ...] } }
     floatingLabels: {},  // todo: { socketID: HTMLDivElement }
+    activeStroke: new Map(), // todo: Problme: becasue undo clears the canvas and redraws the undo stack, the active stroke gets lost if user does undo while drawing. Solution: store active stroke separately and redraw it too.
     globalRedoStack: [],
     globalUndoStack: [],
 
