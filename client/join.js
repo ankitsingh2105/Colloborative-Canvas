@@ -8,12 +8,11 @@ document.getElementById('joinBtn').addEventListener('click', () => {
         return;
     }
 
-    // Correct Netlify path (NO /client/)
     window.location.href =
         `/canvas/canvas.html?room=${room}&user=${username}`;
 });
 
-// LOAD SAVED SESSION
+
 const container = document.getElementById("sessionItem");
 
 const saved = localStorage.getItem("colloborative-canvas-session");
@@ -27,7 +26,6 @@ if (!saved) {
         container.innerHTML = `<p style="opacity:0.6">No saved session found.</p>`;
     } else {
         sessionArr.forEach((sessionObj, index) => {
-            // create a list item
             const li = document.createElement("li");
             li.textContent = `${index + 1}. Room: ${sessionObj.sessionId},  Time : ${sessionObj.time}`;
 
@@ -46,8 +44,6 @@ if (!saved) {
                     alert("Please enter both username and room ID.");
                     return;
                 }
-
-                // Correct Netlify path (NO /client/)
                 window.location.href =
                     `/canvas/canvas.html?room=${room}&user=${username}&loadSession=${index}`;
             });
