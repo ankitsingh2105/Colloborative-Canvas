@@ -1,24 +1,11 @@
 
-import { socket } from './socket.js';
+import { socket } from './socketConnection.js';
 import { state } from './state.js';
 import { smoothDrawUsingLast3 } from './smoothing.js';
 
-socket.on("beginPath", ({ socketID, color, offsetX, offsetY, strokeSize: s }) => {
+socket.on("beginPath", ({ socketID, color, offsetX, offsetY, strokeSize, playerName }) => {
   const x = offsetX * state.canvas.width;
   const y = offsetY * state.canvas.height;
-
-  state.ctx.beginPath();
-  state.ctx.moveTo(x, y);
-  
-  // store first point
-  state.remotePaths[socketID] = {
-    color,
-    strokeSize: s,
-    points: [{ x, y }]
-  };
-
-  // putting in the active stroke map too
-  state.activeStroke.set(socketID, [{ offsetX, offsetY, strokeSize, color }]);
 
   // * floating label
   if (!state.floatingLabels[socketID]) {
@@ -37,9 +24,21 @@ socket.on("beginPath", ({ socketID, color, offsetX, offsetY, strokeSize: s }) =>
   const rect = state.canvas.getBoundingClientRect();
   const label = state.floatingLabels[socketID];
   label.style.display = "flex";
-  label.style.left = `${rect.left + offsetX + 10}px`;
-  label.style.top = `${rect.top + offsetY - 20}px`;
-  label.innerText = state.playerName;
+  label.innerText = playerName;
+  label.style.left = `${rect.left + x + 10}px`;
+  label.style.top = `${rect.top + y - 20}px`;
+
+
+  // store first point
+  state.remotePaths[socketID] = {
+    color,
+    strokeSize,
+    points: [{ x, y }]
+  };
+
+  // putting in the active stroke map too
+  state.activeStroke.set(socketID, [{ offsetX, offsetY, strokeSize, color }]);
+
 });
 
 
@@ -126,7 +125,10 @@ socket.on("user-disconnected", ({ socketID }) => {
 
 
 function redrawUndoAndActiveStrokes() {
-  state.ctx.clearRect(0, 0, state.canvas.width, state.canvas.height);
+
+  let W = state.canvas.width;
+  let H = state.canvas.height;
+  state.ctx.clearRect(0, 0, W, H);
 
   // redraw all strokes in undo stack
   state.globalUndoStack.forEach(strokeOp => {
@@ -138,10 +140,10 @@ function redrawUndoAndActiveStrokes() {
     state.ctx.lineJoin = "round";
 
     state.ctx.beginPath();
-    state.ctx.moveTo(points[0].offsetX * state.canvas.width, points[0].offsetY * state.canvas.height);
+    state.ctx.moveTo(points[0].offsetX * W, points[0].offsetY * H);
 
     for (let i = 1; i < points.length; i++) {
-      state.ctx.lineTo(points[i].offsetX * state.canvas.width, points[i].offsetY * state.canvas.height);
+      state.ctx.lineTo(points[i].offsetX * W, points[i].offsetY * H);
     }
 
     state.ctx.stroke();
@@ -149,23 +151,21 @@ function redrawUndoAndActiveStrokes() {
 
   // painting the ative strokes as well
   for (const [socketID, points] of state.activeStroke) {
-    for (let i = 0; i < points.length; i++) {
-      const pt = points[i];
-      state.ctx.strokeStyle = pt.color;
-      state.ctx.lineWidth = pt.strokeSize;
-      state.ctx.lineCap = "round";
-      state.ctx.lineJoin = "round";
+    // this was insode, causing a lot of dots in place of lines
+    if( points.length === 0) continue;
+    const pt = points[0];
+    state.ctx.strokeStyle = pt.color;
+    state.ctx.lineWidth = pt.strokeSize;
+    state.ctx.lineCap = "round";
+    state.ctx.lineJoin = "round";
+    state.ctx.beginPath();
+    state.ctx.moveTo(points[0].offsetX * W, points[0].offsetY * H);
 
-      state.ctx.beginPath();
-      // agar zero hai toh moveTo karna hai
-      if (i === 0) {
-        state.ctx.moveTo(pt.offsetX * state.canvas.width, pt.offsetY * state.canvas.height);
-      }
-      else {
-        state.ctx.lineTo(pt.offsetX * state.canvas.width, pt.offsetY * state.canvas.height);
-      }
-      state.ctx.stroke();
+    for (let i = 1; i < points.length; i++) {
+      const pt = points[i];
+      state.ctx.lineTo(pt.offsetX * W, pt.offsetY * H);
     }
+    state.ctx.stroke();
   }
 }
 

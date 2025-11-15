@@ -1,4 +1,4 @@
-import { socket } from './socket.js';
+import { socket } from './socketConnection.js';
 import { state } from './state.js';
 
 // pointer down

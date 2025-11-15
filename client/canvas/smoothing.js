@@ -6,6 +6,7 @@ export function smoothDrawUsingLast3(ctx, path, strokeSize, color) {
 
   if (path.points.length < 3) {
     const last = path.points[path.points.length - 1];
+    ctx.beginPath();
     ctx.lineTo(last.x, last.y);
     ctx.stroke();
     return;

@@ -1,5 +1,4 @@
 import {backendlink} from "../backendlink.js";
-console.log("Backend Link:", backendlink);
 function createSocket(roomID, username) {
   const socket = io(backendlink, {
     autoConnect: false,
@@ -21,8 +20,7 @@ const socket = createSocket(roomID, username);
 socket.connect();
 
 socket.on("connect", () => {
-  console.log(`✅ Connected as ${username} to room ${roomID}`);
+  console.log(`⚡⚡ ${username} connected to room ${roomID}`);
 });
-
 
 export { socket };
