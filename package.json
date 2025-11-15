@@ -1,0 +1,14 @@
+{
+  "name": "collaborative-canvas",
+  "version": "1.0.0",
+  "scripts": {
+    "postinstall": "cd server && npm install",
+    "start": "concurrently \"npm run start-server\" \"npm run start-client\"",
+    "start-server": "node server/server.js",
+    "start-client": "live-server client --port=5554"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "live-server": "^1.2.2"
+  }
+}
